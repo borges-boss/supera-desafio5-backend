@@ -20,7 +20,7 @@ public class TransferenciaController {
          return new ResponseEntity<List<Transferencia>>(transferenciaService.getTransferenciaByFilter(request.getParameter("dataTransferenciaStart"),request.getParameter("dataTransferenciaEnd"),request.getParameter("nomeOperadorTransacao")), null, 200);
         } catch(Exception ex) {
             ex.printStackTrace();
-            return new ResponseEntity<String>(ex.getMessage(), null, 500);
+            return new ResponseEntity<String>("Internal Server Error", null, 500);
         }
     }
 
@@ -31,7 +31,7 @@ public class TransferenciaController {
          return new ResponseEntity<List<Transferencia>>(transferenciaService.getTransferenciaByConta(request.getParameter("contaId")), null, 200);
         } catch(Exception ex) {
             ex.printStackTrace();
-            return new ResponseEntity<String>(ex.getMessage(), null, 500);
+            return new ResponseEntity<String>("Internal Server Error", null, 500);
         }
     }
 
