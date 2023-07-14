@@ -1,6 +1,6 @@
 package br.com.banco.transferencia;
+import java.util.Date;
 import javax.persistence.*;
-
 import br.com.banco.conta.Conta;
 
 @Entity
@@ -11,9 +11,9 @@ public class Transferencia {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 
-    @Column(name = "data_transferencia")
     @Temporal(TemporalType.TIMESTAMP)
-	private java.util.Date dataTransferencia;
+    @Column(name = "data_transferencia")
+	private Date dataTransferencia;
 
     @Column(name = "valor")
 	private float valor;
@@ -24,20 +24,20 @@ public class Transferencia {
     @Column(name = "nome_operador_transacao")
 	private String nomeOperadorTransacao;
 
-    @JoinColumn(name = "conta_id")
-    private Conta conta;
+    @ManyToOne
+    @JoinColumn(name="conta_id", nullable=false)
+    private Conta contaId;
 
 
     public Transferencia() {
-
     }
 
-    public Transferencia(java.util.Date dataTransferencia, float valor, String tipo, String nomeOperadorTransacao, Conta conta) {
+    public Transferencia(Date dataTransferencia, float valor, String tipo, String nomeOperadorTransacao, Conta conta) {
         this.dataTransferencia = dataTransferencia;
         this.valor = valor;
         this.tipo = tipo;
         this.nomeOperadorTransacao = nomeOperadorTransacao;
-        this.conta = conta;
+        this.contaId = conta;
     }
 
     public long getId() {
@@ -48,11 +48,11 @@ public class Transferencia {
         this.id = id;
     }
 
-    public java.util.Date getDataTransferencia() {
+    public Date getDataTransferencia() {
         return dataTransferencia;
     }
 
-    public void setDataTransferencia(java.util.Date dataTransferencia) {
+    public void setDataTransferencia(Date dataTransferencia) {
         this.dataTransferencia = dataTransferencia;
     }
 
@@ -73,19 +73,22 @@ public class Transferencia {
     }
 
     public String getNomeOperadorTransacao() {
-        return nomeOperadorTransacao;
+        if(this.tipo.equals("DEPOSITO") || this.tipo.equals("SAQUE"))
+         return contaId.getNomeResponsavel();
+        else
+         return nomeOperadorTransacao;
     }
 
     public void setNomeOperadorTransacao(String nomeOperadorTransacao) {
         this.nomeOperadorTransacao = nomeOperadorTransacao;
     }
 
-    public Conta getConta() {
-        return conta;
+    public Conta getContaId() {
+        return contaId;
     }
 
-    public void setConta(Conta conta) {
-        this.conta = conta;
+    public void setContaId(Conta conta) {
+        this.contaId = conta;
     }
     
 }

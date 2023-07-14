@@ -7,25 +7,25 @@ public class Conta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idConta;
 
+    @Column(name = "nome_responsavel")
     private String nomeResponsavel;
-
-    // Constructors, getters, and setters
 
     public Conta() {
     }
 
-    public Conta(String nomeResponsavel) {
+    public Conta(Long idConta, String nomeResponsavel) {
+        this.idConta = idConta;
         this.nomeResponsavel = nomeResponsavel;
     }
 
-    public Long getId() {
-        return id;
+    public Long getIdConta() {
+        return idConta;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIdConta(Long id) {
+        this.idConta = id;
     }
 
     public String getNomeResponsavel() {

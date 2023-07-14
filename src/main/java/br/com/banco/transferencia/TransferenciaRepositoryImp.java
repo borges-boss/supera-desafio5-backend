@@ -1,10 +1,13 @@
 package br.com.banco.transferencia;
 
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -17,7 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
+import org.springframework.stereotype.Repository;
 
+import br.com.banco.conta.Conta;
+
+@Repository
 public class TransferenciaRepositoryImp implements TransferenciaRepository {
 
     @PersistenceContext
@@ -198,29 +205,50 @@ public class TransferenciaRepositoryImp implements TransferenciaRepository {
         throw new UnsupportedOperationException("Unimplemented method 'findBy'");
     }
 
-    public List<Transferencia> findByFilters(String dataTransferenciaStart, String dataTransferenciaEnd,String nomeOperadorTransacao) {
+
+    public List<Transferencia> findByContaId(Long contaId) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Transferencia> query = cb.createQuery(Transferencia.class);
         Root<Transferencia> root = query.from(Transferencia.class);
-        
         List<Predicate> predicates = new ArrayList<>();
+        Join<Transferencia, Conta> join = root.join("contaId");
+        predicates.add(cb.equal(join.get("idConta"), contaId));
+
+        query.where(predicates.toArray(new Predicate[0]));
+        return entityManager.createQuery(query).setMaxResults(500).getResultList();
+    }
+
+    public List<Transferencia> findByFilters(Date dataTransferenciaStart, Date dataTransferenciaEnd,String nomeOperadorTransacao) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Transferencia> query = cb.createQuery(Transferencia.class);
+        Root<Transferencia> root = query.from(Transferencia.class);
+        List<Predicate> predicates = new ArrayList<>();
+
         if (dataTransferenciaStart != null && dataTransferenciaEnd != null) {
-            cb.between(root.get("data_transferencia"),dataTransferenciaStart,dataTransferenciaEnd);
+            predicates.add(cb.greaterThanOrEqualTo(root.get("dataTransferencia"), dataTransferenciaStart));
+            predicates.add(cb.lessThanOrEqualTo(root.get("dataTransferencia"), dataTransferenciaEnd));
         }
         else if(dataTransferenciaStart != null && dataTransferenciaEnd == null){
-            predicates.add(cb.equal(root.get("data_transferencia"), dataTransferenciaStart));
+            predicates.add(cb.greaterThanOrEqualTo(root.get("dataTransferencia"), dataTransferenciaStart));
         }
         else if(dataTransferenciaStart == null && dataTransferenciaEnd != null) {
-            predicates.add(cb.equal(root.get("data_transferencia"), dataTransferenciaEnd));
+            predicates.add(cb.lessThanOrEqualTo(root.get("dataTransferencia"), dataTransferenciaEnd));
         }
 
         if (nomeOperadorTransacao != null) {
-            predicates.add(cb.equal(root.get("nome_operador_transacao"), nomeOperadorTransacao));
+            Join<Transferencia, Conta> join = root.join("contaId");
+            Expression<Boolean> deposito = cb.and(cb.equal(root.get("tipo"), "DEPOSITO"), cb.equal(join.get("nomeResponsavel"), nomeOperadorTransacao));
+
+            Expression<Boolean> saque = cb.and(cb.equal(root.get("tipo"), "SAQUE"), cb.equal(join.get("nomeResponsavel"), nomeOperadorTransacao));
+            Expression<Boolean> transferencia = cb.and(cb.equal(root.get("tipo"), "TRANSFERENCIA"), cb.equal(root.get("nomeOperadorTransacao"), nomeOperadorTransacao));
+            Expression<Boolean> responsavel =  cb.or(saque,transferencia);
+
+            predicates.add(cb.or(deposito,responsavel));
         }
-        
+
         query.where(predicates.toArray(new Predicate[0]));
         
-        return entityManager.createQuery(query).getResultList();
+        return entityManager.createQuery(query).setMaxResults(500).getResultList();
     }
-    
+
 }
