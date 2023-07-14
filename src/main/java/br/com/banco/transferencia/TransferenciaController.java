@@ -14,7 +14,6 @@ public class TransferenciaController {
     @Autowired
     TransferenciaService transferenciaService;
 
-    @CrossOrigin(origins = "http://localhost:3000") //Apenas para proposito de teste
     @PostMapping("/getTransferenciasByFilter")
     public ResponseEntity<?> getTransferenciasByFilter(HttpServletRequest request,HttpServletResponse response) {
         try {
