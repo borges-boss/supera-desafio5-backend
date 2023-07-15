@@ -32,8 +32,8 @@ public class TransferenciaRepositoryImp implements TransferenciaRepository {
 
     @Override
     public List<Transferencia> findAll() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        return entityManager.createQuery("SELECT * FROM transferencia", Transferencia.class)
+        .getResultList();
     }
 
     @Override
@@ -122,8 +122,12 @@ public class TransferenciaRepositoryImp implements TransferenciaRepository {
 
     @Override
     public <S extends Transferencia> S save(S entity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'save'");
+        if (entity.getId() == 0L) {
+            entityManager.persist(entity);
+            return entity;
+        } else {
+            return entityManager.merge(entity);
+        }
     }
 
     @Override
@@ -146,20 +150,25 @@ public class TransferenciaRepositoryImp implements TransferenciaRepository {
 
     @Override
     public void deleteById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteById'");
+        Transferencia transferencia = entityManager.find(Transferencia.class, id);
+        if (transferencia != null) {
+            entityManager.remove(transferencia);
+        }
     }
 
     @Override
     public void delete(Transferencia entity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        entityManager.remove(entity);
     }
 
     @Override
     public void deleteAllById(Iterable<? extends Long> ids) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteAllById'");
+        for (Long id : ids) {
+            Transferencia transferencia = entityManager.find(Transferencia.class, id);
+            if (transferencia != null) {
+                entityManager.remove(transferencia);
+            }
+        }
     }
 
     @Override
